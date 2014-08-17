@@ -61,6 +61,7 @@ app.use(function(err, req, res, next) {
 
 io.on('connection', function(socket){
   socket.on('alert message', function(msg){
+    console.log(msg);
     io.emit('alert message', msg);
   });
 });
