@@ -11,6 +11,7 @@ var users = require('./routes/users');
 
 var app = express();
 var server = require('http').Server(app);
+var io = require('socket.io')(server);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -58,9 +59,10 @@ app.use(function(err, req, res, next) {
     });
 });
 
+io.on('connection', function(socket){
+  socket.on('alert message', function(msg){
+    io.emit('alert message', msg);
+  });
+});
 
-//module.exports = app;
-//http.createServer(app).listen(app.get('port'), function(){
-//  console.log("Express server listening on port " + app.get('port'));
-//});
 server.listen(app.get('port'));
