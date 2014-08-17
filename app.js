@@ -7,7 +7,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
+var hooks = require('./routes/hooks');
 
 var app = express();
 var server = require('http').Server(app);
@@ -26,7 +26,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/hooks', hooks);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -61,7 +61,6 @@ app.use(function(err, req, res, next) {
 
 io.on('connection', function(socket){
   socket.on('alert message', function(msg){
-    console.log(msg);
     io.emit('alert message', msg);
   });
 });
