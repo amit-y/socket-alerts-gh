@@ -25,8 +25,23 @@ app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/hooks', hooks);
+//app.use('/', routes());
+//app.use('/hooks', hooks);
+var router = express.Router();
+
+// home page route (http://localhost:8080)
+router.get('/', function(req, res) {
+  res.render('index', { title: 'socket-alerts-gh' });  
+});
+
+// about page route (http://localhost:8080/about)
+router.post('/hooks/gh-default', function(req, res) {
+  io.emit('alert message', JSON.stringify(req.body));
+  res.send('success');
+});
+
+// apply the routes to our application
+app.use('/', router);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
