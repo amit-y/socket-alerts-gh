@@ -9,13 +9,17 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var hooks = require('./routes/hooks');
 
+var marked = require('marked');
+
+var alert = '';
+
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+//app.set('view engine', 'jade');
 app.set('port', process.env.PORT || 3000);
 
 app.use(favicon(__dirname + '/public/favicon.ico'));
@@ -31,12 +35,13 @@ var router = express.Router();
 
 // home page route (http://localhost:8080)
 router.get('/', function(req, res) {
-  res.render('index', { title: 'socket-alerts-gh' });  
+  //res.render('index', { title: 'socket-alerts-gh' });
+  res.sendfile('views/index.html');
 });
 
 // about page route (http://localhost:8080/about)
 router.post('/hooks/gh-default', function(req, res) {
-  io.emit('alert message', JSON.stringify(req.body));
+  io.emit('debug message', JSON.stringify(req.body));
   res.send('success');
 });
 
@@ -75,8 +80,11 @@ app.use(function(err, req, res, next) {
 });
 
 io.on('connection', function(socket){
+  if (alert) socket.emit('alert message', alert);
+  
   socket.on('alert message', function(msg){
-    io.emit('alert message', msg);
+    alert = marked(msg);
+    io.emit('alert message', alert);
   });
 });
 
