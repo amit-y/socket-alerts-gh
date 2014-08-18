@@ -45,7 +45,7 @@ router.get('/', function(req, res) {
 router.post('/hooks/gh-default', function(req, res) {
   var ref = req.body.ref;
   var mods = req.body.commits[0].modified;
-  var alert_found = _.indexOf(mods,'alerts.md');
+  var alert_found = _.indexOf(mods,'alert.md');
   var debug_message = {ref: ref, mods: mods, af: alert_found }
   io.emit('debug message', JSON.stringify(debug_message));
   res.send('success');
