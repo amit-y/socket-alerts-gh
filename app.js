@@ -14,6 +14,8 @@ var marked = require('marked');
 var alert = '';
 
 var _ = require('lodash');
+var request = require('request');
+var config = require('./config.json');
 
 var app = express();
 var server = require('http').Server(app);
@@ -46,9 +48,22 @@ router.post('/hooks/gh-default', function(req, res) {
   var ref = req.body.ref;
   var mods = req.body.commits[0].modified;
   var alert_found = _.indexOf(mods,'alert.md');
-  var debug_message = {ref: ref, mods: mods, af: alert_found }
-  io.emit('debug message', JSON.stringify(debug_message));
-  res.send('success');
+  //var debug_message = {ref: ref, mods: mods, af: alert_found }
+  if (ref==='refs/heads/master' && alert_found>-1) {
+    request(config.github, function(err, response, body) {
+      if (err) {
+        console.log(err);
+      } else  if (response.statusCode!=200) {
+        console.log(body);
+      } else {
+        var content = JSON.parse(body).content;
+        var content_buffer = new Buffer(content, 'base64');
+        alert = marked(content_buffer.toString());
+        io.emit('alert message', alert);
+      }
+      res.send('success');
+    });
+  }
 });
 
 // apply the routes to our application
@@ -88,10 +103,10 @@ app.use(function(err, req, res, next) {
 io.on('connection', function(socket){
   if (alert) socket.emit('alert message', alert);
   
-  socket.on('alert message', function(msg){
+  /* socket.on('alert message', function(msg){
     alert = marked(msg);
     io.emit('alert message', alert);
-  });
+  }); */
 });
 
 server.listen(app.get('port'));

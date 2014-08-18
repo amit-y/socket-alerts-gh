@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "author": "Amit Yathirajadasan"
+  },
+  "github": {
+    "url": "https://api.github.com/repos/amit-y/test-webhooks/contents/alert.md?ref=master",
+    "headers": {
+          "User-Agent": "amit-y"
+      }
+  }
+}
