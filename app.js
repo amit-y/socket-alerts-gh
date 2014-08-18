@@ -13,13 +13,15 @@ var marked = require('marked');
 
 var alert = '';
 
+var _ = require('lodash');
+
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-//app.set('view engine', 'jade');
+app.set('view engine', 'jade');
 app.set('port', process.env.PORT || 3000);
 
 app.use(favicon(__dirname + '/public/favicon.ico'));
@@ -41,7 +43,11 @@ router.get('/', function(req, res) {
 
 // about page route (http://localhost:8080/about)
 router.post('/hooks/gh-default', function(req, res) {
-  io.emit('debug message', JSON.stringify(req.body));
+  var ref = req.body.ref;
+  var mods = req.body.commits[0].modified;
+  var alert_found = _.indexOf(mods,'alerts.md');
+  var debug_message = {ref: ref, mods: mods, af: alert_found }
+  io.emit('debug message', JSON.stringify(debug_message));
   res.send('success');
 });
 
