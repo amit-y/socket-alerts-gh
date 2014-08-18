@@ -92,6 +92,9 @@
           $('.alert-gh-text').html('').parent().fadeOut(300);
         });
       });
+      socket.on('no alert', function(msg) {
+        if ($('.alert-gh').is(':visible')) $('.alert-gh-text').html('').parent().fadeOut(300);
+      });
       socket.on('debug message', function(msg) {
         console.log(msg);
       });

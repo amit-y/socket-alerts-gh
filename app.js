@@ -14,6 +14,7 @@ var marked = require('marked');
 var alert = '';
 
 var _ = require('lodash');
+var Q = require('q');
 var request = require('request');
 var config = require('./config.json');
 
@@ -50,16 +51,11 @@ router.post('/hooks/gh-default', function(req, res) {
   var alert_found = _.indexOf(mods,'alert.md');
   //var debug_message = {ref: ref, mods: mods, af: alert_found }
   if (ref==='refs/heads/master' && alert_found>-1) {
-    request(config.github, function(err, response, body) {
-      if (err) {
-        console.log(err);
-      } else  if (response.statusCode!=200) {
-        console.log(body);
-      } else {
-        var content = JSON.parse(body).content;
-        var content_buffer = new Buffer(content, 'base64');
-        alert = marked(content_buffer.toString());
+    getContent().then(function() {
+      if (alert) {
         io.emit('alert message', alert);
+      } else {
+        io.emit('no alert','');
       }
       res.send('success');
     });
@@ -101,12 +97,35 @@ app.use(function(err, req, res, next) {
 });
 
 io.on('connection', function(socket){
-  if (alert) socket.emit('alert message', alert);
-  
+  //if (alert) socket.emit('alert message', alert);
+  if (alert) {
+    socket.emit('alert message', alert);
+  } else {
+    socket.emit('no alert','');
+  }  
   /* socket.on('alert message', function(msg){
     alert = marked(msg);
     io.emit('alert message', alert);
   }); */
 });
+
+var getContent = function() {
+  return Q.Promise(function(resolve, reject) {
+    request(config.github, function(err, response, body) {
+      if (err) {
+        console.log(err);
+      } else  if (response.statusCode!=200) {
+        console.log(body);
+      } else {
+        var content = JSON.parse(body).content;
+        var content_buffer = new Buffer(content, 'base64');
+        alert = marked(content_buffer.toString());
+      }
+      resolve();
+    });
+  });
+}
+
+getContent();
 
 server.listen(app.get('port'));
